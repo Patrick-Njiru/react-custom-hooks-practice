@@ -1,4 +1,5 @@
 
+import axios from "axios"
 import { useEffect, useState } from "react"
 
 // the naming convention of custom hooks requires that you start with the 'use' word when naming your hook
@@ -10,23 +11,25 @@ import { useEffect, useState } from "react"
 export const useFetch = (url) => {
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [errors, setErrors] = useState('')
+  const [error, setError] = useState('')
 
-  const getProducts = async () => {
-      const response = await fetch(url)
-      if (!response.ok) {
-        setErrors('Error ' + response.status)
+  const getProducts = () => {
+    axios.get(url)
+      .then(res => {
+        if (res.status >= 200 && res.status < 300) {
+          setProducts(res.data)
+          setIsLoading(false)
+        }        
+      })
+      .catch(err => {
+        setError(err.message)
         setIsLoading(false)
-        console.log('Error ' + response.status);
-      } else {
-        const data = await response.json()
-        setProducts(data)
-        setIsLoading(false)
-      }
+        console.log(err);
+      })
   }
   
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { getProducts() }, [url])
 
-  return {products, isLoading, errors}
+  return {products, isLoading, error}
 }
